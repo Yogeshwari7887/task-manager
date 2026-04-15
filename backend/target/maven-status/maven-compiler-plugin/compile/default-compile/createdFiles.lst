@@ -1,0 +1,4 @@
+com\taskmanager\config\DataInitializer.class
+com\taskmanager\controller\DashboardController.class
+com\taskmanager\config\SecurityConfig.class
+com\taskmanager\config\WebSocketConfig.class

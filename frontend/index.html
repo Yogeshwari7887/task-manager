@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced Task Management System - Manage projects, tasks, and teams with real-time collaboration">
+    <title>TaskFlow Pro — Advanced Task Management</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- SockJS + STOMP for WebSocket -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ===== LOADING SCREEN ===== -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="loader-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <p class="loader-text">Loading TaskFlow Pro...</p>
+        </div>
+    </div>
+
+    <!-- ===== AUTH PAGES ===== -->
+    <div id="auth-container" class="auth-container hidden">
+        <div class="auth-bg">
+            <div class="auth-bg-shape shape-1"></div>
+            <div class="auth-bg-shape shape-2"></div>
+            <div class="auth-bg-shape shape-3"></div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-page" class="auth-card glass-card animate-in">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-tasks"></i>
+                    <span>TaskFlow Pro</span>
+                </div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to continue to your workspace</p>
+            </div>
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="login-username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="login-username" placeholder="Enter your username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-input">
+                        <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="login-error" class="form-error hidden"></div>
+                <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+                    <span>Sign In</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="#" onclick="showRegister()">Create Account</a></p>
+            </div>
+            <div class="demo-credentials">
+                <p><i class="fas fa-info-circle"></i> Demo: <strong>admin</strong> / <strong>admin123</strong></p>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-page" class="auth-card glass-card hidden">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-tasks"></i>
+                    <span>TaskFlow Pro</span>
+                </div>
+                <h1>Create Account</h1>
+                <p>Join TaskFlow Pro and boost your productivity</p>
+            </div>
+            <form id="register-form" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-fullname"><i class="fas fa-id-card"></i> Full Name</label>
+                        <input type="text" id="reg-fullname" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-username"><i class="fas fa-user"></i> Username</label>
+                        <input type="text" id="reg-username" placeholder="johndoe" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="reg-email" placeholder="john@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-input">
+                        <input type="password" id="reg-password" placeholder="Min 6 characters" required minlength="6">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="register-error" class="form-error hidden"></div>
+                <button type="submit" class="btn btn-primary btn-full" id="register-btn">
+                    <span>Create Account</span>
+                    <i class="fas fa-rocket"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p>Already have an account? <a href="#" onclick="showLogin()">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-tasks"></i>
+                    <span class="logo-text">TaskFlow</span>
+                </div>
+                <button id="sidebar-toggle" class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Main</span>
+                    <a href="#" class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+                        <i class="fas fa-th-large"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="tasks" onclick="navigateTo('tasks')">
+                        <i class="fas fa-check-square"></i>
+                        <span>My Tasks</span>
+                        <span class="nav-badge" id="task-count-badge"></span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="projects" onclick="navigateTo('projects')">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Projects</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="kanban" onclick="navigateTo('kanban')">
+                        <i class="fas fa-columns"></i>
+                        <span>Kanban Board</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Productivity</span>
+                    <a href="#" class="nav-item" data-page="calendar" onclick="navigateTo('calendar')">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Calendar</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="timetracker" onclick="navigateTo('timetracker')">
+                        <i class="fas fa-clock"></i>
+                        <span>Time Tracker</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="habits" onclick="navigateTo('habits')">
+                        <i class="fas fa-fire"></i>
+                        <span>Habits</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="focus" onclick="navigateTo('focus')">
+                        <i class="fas fa-bullseye"></i>
+                        <span>Focus Mode</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">Insights</span>
+                    <a href="#" class="nav-item" data-page="analytics" onclick="navigateTo('analytics')">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="alerts" onclick="navigateTo('alerts')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Risk Alerts</span>
+                    </a>
+                </div>
+
+                <div class="nav-section" id="admin-nav" style="display:none;">
+                    <span class="nav-section-title">Admin</span>
+                    <a href="#" class="nav-item" data-page="admin-users" onclick="navigateTo('admin-users')">
+                        <i class="fas fa-users-cog"></i>
+                        <span>User Management</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="admin-dashboard" onclick="navigateTo('admin-dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Admin Panel</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="theme-toggle-container">
+                    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">
+                        <div class="toggle-track">
+                            <i class="fas fa-sun toggle-icon sun"></i>
+                            <i class="fas fa-moon toggle-icon moon"></i>
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </button>
+                    <span class="theme-label" id="theme-label">Dark Mode</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="global-search" placeholder="Search tasks, projects..." class="search-input">
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="topbar-btn notification-btn" id="notification-btn" onclick="toggleNotificationPanel()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notification-badge" style="display:none;">0</span>
+                    </button>
+                    <div class="user-menu" id="user-menu">
+                        <div class="user-avatar" onclick="toggleUserMenu()">
+                            <div class="avatar-circle" id="user-avatar-circle">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <span class="user-name" id="topbar-username">User</span>
+                                <span class="user-role" id="topbar-role">Role</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="user-dropdown hidden" id="user-dropdown">
+                            <a href="#" onclick="navigateTo('profile')"><i class="fas fa-user-circle"></i> Profile</a>
+                            <a href="#" onclick="navigateTo('settings')"><i class="fas fa-cog"></i> Settings</a>
+                            <hr>
+                            <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Notification Panel -->
+            <div class="notification-panel hidden" id="notification-panel">
+                <div class="notification-panel-header">
+                    <h3><i class="fas fa-bell"></i> Notifications</h3>
+                    <button onclick="markAllNotificationsRead()" class="btn btn-sm btn-ghost">Mark all read</button>
+                </div>
+                <div class="notification-list" id="notification-list">
+                    <div class="notification-empty">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No notifications yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="page-content" id="page-content">
+                <!-- Pages are rendered here dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()"></div>
+    
+    <!-- Create/Edit Task Modal -->
+    <div id="task-modal" class="modal hidden">
+        <div class="modal-header">
+            <h2 id="task-modal-title"><i class="fas fa-plus-circle"></i> New Task</h2>
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="task-form">
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Title *</label>
+                        <input type="text" id="task-title" placeholder="Task title" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Priority</label>
+                        <select id="task-priority">
+                            <option value="LOW">🟢 Low</option>
+                            <option value="MEDIUM" selected>🟡 Medium</option>
+                            <option value="HIGH">🟠 High</option>
+                            <option value="CRITICAL">🔴 Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="task-description" placeholder="Add a detailed description..." rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="task-status">
+                            <option value="TODO">To Do</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="COMPLETED">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Deadline</label>
+                        <input type="datetime-local" id="task-deadline">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Project</label>
+                        <select id="task-project"><option value="">No Project</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assignee</label>
+                        <select id="task-assignee"><option value="">Unassigned</option></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" id="task-category" placeholder="e.g. Development, Design">
+                    </div>
+                    <div class="form-group">
+                        <label>Estimated Time (min)</label>
+                        <input type="number" id="task-estimated" placeholder="60">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><input type="checkbox" id="task-recurring"> Recurring Task</label>
+                    </div>
+                    <div class="form-group" id="recurrence-options" style="display:none;">
+                        <select id="task-recurrence-type">
+                            <option value="DAILY">Daily</option>
+                            <option value="WEEKLY">Weekly</option>
+                            <option value="MONTHLY">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="hidden" id="task-edit-id" value="">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveTask()">
+                <i class="fas fa-save"></i> Save Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Create/Edit Project Modal -->
+    <div id="project-modal" class="modal hidden">
+        <div class="modal-header">
+            <h2 id="project-modal-title"><i class="fas fa-folder-plus"></i> New Project</h2>
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="project-form">
+                <div class="form-group">
+                    <label>Project Name *</label>
+                    <input type="text" id="project-name" placeholder="Project name" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="project-description" placeholder="Describe this project..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Deadline</label>
+                    <input type="datetime-local" id="project-deadline">
+                </div>
+                <input type="hidden" id="project-edit-id" value="">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveProject()">
+                <i class="fas fa-save"></i> Save Project
+            </button>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div id="task-detail-modal" class="modal modal-lg hidden">
+        <div class="modal-header">
+            <h2><i class="fas fa-tasks"></i> Task Details</h2>
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="task-detail-body">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/pages/dashboard.js"></script>
+    <script src="js/pages/tasks.js"></script>
+    <script src="js/pages/projects.js"></script>
+    <script src="js/pages/kanban.js"></script>
+    <script src="js/pages/calendar.js"></script>
+    <script src="js/pages/timetracker.js"></script>
+    <script src="js/pages/habits.js"></script>
+    <script src="js/pages/focus.js"></script>
+    <script src="js/pages/analytics.js"></script>
+    <script src="js/pages/alerts.js"></script>
+    <script src="js/pages/admin.js"></script>
+</body>
+</html>
