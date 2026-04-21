@@ -58,6 +58,7 @@ C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskma
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\service\DashboardService.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\model\Tag.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\config\WebSocketConfig.java
+C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\config\CorsConfig.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\model\Habit.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\repository\ProjectRepository.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\security\JwtAuthenticationFilter.java

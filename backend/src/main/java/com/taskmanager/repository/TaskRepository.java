@@ -41,12 +41,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT COUNT(t) FROM Task t WHERE t.status = :status")
     long countByStatus(@Param("status") Task.Status status);
 
-    @Query("SELECT t FROM Task t WHERE t.project.id = :projectId ORDER BY t.computedPriority DESC NULLS LAST")
+    @Query("SELECT t FROM Task t WHERE t.project.id = :projectId ORDER BY COALESCE(t.computedPriority, 0) DESC")
     List<Task> findByProjectIdOrderByPriority(@Param("projectId") Long projectId);
 
     @Query("SELECT t FROM Task t WHERE t.nextRecurrence IS NOT NULL AND t.nextRecurrence <= :now")
     List<Task> findTasksDueForRecurrence(@Param("now") LocalDateTime now);
 
-    @Query("SELECT t FROM Task t WHERE t.assignee.id = :userId AND t.status = 'IN_PROGRESS' ORDER BY t.computedPriority DESC NULLS LAST")
+    @Query("SELECT t FROM Task t WHERE t.assignee.id = :userId AND t.status = 'IN_PROGRESS' ORDER BY COALESCE(t.computedPriority, 0) DESC")
     List<Task> findActiveTasksByUser(@Param("userId") Long userId);
 }
