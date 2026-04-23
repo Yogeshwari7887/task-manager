@@ -194,6 +194,10 @@ async function openTaskModal(taskId = null) {
         } catch (e) { }
     } else {
         document.getElementById('task-form').reset();
+        // When creating from Kanban, keep task in the currently selected project
+        if (activePage === 'kanban' && window._kanbanProject) {
+            document.getElementById('task-project').value = String(window._kanbanProject);
+        }
     }
 
     openModal('task-modal');
