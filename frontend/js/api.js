@@ -1,5 +1,10 @@
 // ===== API Client =====
-const API_BASE = 'http://localhost:8081/api';
+// ⚠️ Set your production backend API URL here when deploying (e.g. 'https://task-manager-backend.up.railway.app/api')
+const DEPLOYED_API_BASE = 'https://your-backend-url.up.railway.app/api';
+
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8081/api'
+    : DEPLOYED_API_BASE;
 
 const api = {
     token: localStorage.getItem('token'),
