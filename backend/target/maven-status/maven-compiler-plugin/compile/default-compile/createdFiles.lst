@@ -12,6 +12,7 @@ com\taskmanager\dto\AuthResponse$AuthResponseBuilder.class
 com\taskmanager\exception\BadRequestException.class
 com\taskmanager\security\JwtAuthenticationFilter.class
 com\taskmanager\dto\TaskDTO.class
+com\taskmanager\dto\NotificationDTO.class
 com\taskmanager\dto\UserDTO$UserDTOBuilder.class
 com\taskmanager\dto\TagDTO$TagDTOBuilder.class
 com\taskmanager\exception\ResourceNotFoundException.class
@@ -43,6 +44,7 @@ com\taskmanager\model\Habit$HabitBuilder.class
 com\taskmanager\model\User$UserBuilder.class
 com\taskmanager\config\SecurityConfig.class
 com\taskmanager\repository\CommentRepository.class
+com\taskmanager\dto\NotificationDTO$NotificationDTOBuilder.class
 com\taskmanager\model\Notification$NotificationType.class
 com\taskmanager\model\Project$ProjectStatus.class
 com\taskmanager\dto\DashboardDTO.class

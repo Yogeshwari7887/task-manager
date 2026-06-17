@@ -1,6 +1,6 @@
 package com.taskmanager.controller;
 
-import com.taskmanager.model.Notification;
+import com.taskmanager.dto.NotificationDTO;
 import com.taskmanager.service.NotificationService;
 import com.taskmanager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +21,13 @@ public class NotificationController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getMyNotifications() {
+    public ResponseEntity<List<NotificationDTO>> getMyNotifications() {
         Long userId = userService.getCurrentUser().getId();
         return ResponseEntity.ok(notificationService.getUserNotifications(userId));
     }
 
     @GetMapping("/unread")
-    public ResponseEntity<List<Notification>> getUnread() {
+    public ResponseEntity<List<NotificationDTO>> getUnread() {
         Long userId = userService.getCurrentUser().getId();
         return ResponseEntity.ok(notificationService.getUnreadNotifications(userId));
     }

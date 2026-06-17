@@ -51,9 +51,11 @@ public class DashboardService {
         User currentUser = userService.getCurrentUser();
         Long userId = currentUser.getId();
 
-        long completedTasks = taskRepository.countCompletedByUser(userId);
-        long pendingTasks = taskRepository.countPendingByUser(userId);
+        long completedTasks = taskRepository.countCompletedByUserAll(userId);
+        long pendingTasks = taskRepository.countPendingByUserAll(userId);
         long totalTasks = completedTasks + pendingTasks;
+        long inProgressTasks = taskRepository.countInProgressByUser(userId);
+        long overdueTasks = taskRepository.countOverdueByUser(userId, LocalDateTime.now());
         long totalTimeSpent = timeLogRepository.getTotalTimeByUser(userId);
 
         double completionRate = totalTasks > 0 ? (double) completedTasks / totalTasks * 100 : 0;
@@ -62,6 +64,8 @@ public class DashboardService {
                 .totalTasks(totalTasks)
                 .completedTasks(completedTasks)
                 .pendingTasks(pendingTasks)
+                .inProgressTasks(inProgressTasks)
+                .overdueTasks(overdueTasks)
                 .totalTimeSpent(totalTimeSpent)
                 .completionRate(Math.round(completionRate * 100.0) / 100.0)
                 .build();

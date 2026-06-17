@@ -12,4 +12,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByTaskIdOrderByCreatedAtAsc(Long taskId);
     List<Comment> findByParentCommentId(Long parentCommentId);
     long countByTaskId(Long taskId);
+    void deleteByTaskId(Long taskId);
 }

@@ -10,11 +10,12 @@ pages.calendar = {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-        // Fetch tasks for this month
-        const start = new Date(year, month, 1).toISOString();
-        const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+        // Fetch tasks for this month — format dates WITHOUT timezone suffix for LocalDateTime backend
+        const pad = (n) => String(n).padStart(2, '0');
+        const start = `${year}-${pad(month + 1)}-01T00:00:00`;
+        const end = `${year}-${pad(month + 1)}-${pad(daysInMonth)}T23:59:59`;
         let tasks = [];
-        try { tasks = await api.get(`/tasks/my-calendar?start=${start}&end=${end}`) || []; } catch (e) {}
+        try { tasks = await api.get(`/tasks/my-calendar?start=${start}&end=${end}`) || []; } catch (e) { console.error('Calendar fetch error:', e); }
 
         const tasksByDate = {};
         tasks.forEach(t => {

@@ -19,8 +19,14 @@ const api = {
             const res = await fetch(`${API_BASE}${endpoint}`, config);
             if (res.status === 401) { handleLogout(); return null; }
             if (res.status === 204) return null;
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Request failed');
+            const text = await res.text();
+            let data = {};
+            try {
+                if (text) data = JSON.parse(text);
+            } catch (e) {
+                console.error('Failed to parse JSON response:', text);
+            }
+            if (!res.ok) throw new Error(data.message || data.error || `Request failed with status ${res.status}`);
             return data;
         } catch (err) {
             console.error(`API Error [${method} ${endpoint}]:`, err);

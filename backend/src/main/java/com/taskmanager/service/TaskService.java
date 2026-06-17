@@ -7,6 +7,8 @@ import com.taskmanager.exception.BadRequestException;
 import com.taskmanager.exception.ResourceNotFoundException;
 import com.taskmanager.model.*;
 import com.taskmanager.repository.*;
+import com.taskmanager.repository.NotificationRepository;
+import com.taskmanager.repository.ActivityLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ public class TaskService {
     @Autowired private TagRepository tagRepository;
     @Autowired private TaskDependencyRepository dependencyRepository;
     @Autowired private CommentRepository commentRepository;
+    @Autowired private NotificationRepository notificationRepository;
+    @Autowired private ActivityLogRepository activityLogRepository;
     @Autowired private UserService userService;
     @Autowired private ActivityLogService activityLogService;
     @Autowired private NotificationService notificationService;
@@ -121,8 +125,9 @@ public class TaskService {
         String oldStatus = task.getStatus().name();
 
         if (request.getTitle() != null) task.setTitle(request.getTitle());
-        if (request.getDescription() != null) task.setDescription(request.getDescription());
+        task.setDescription(request.getDescription());
         if (request.getPriority() != null) task.setPriority(Task.Priority.valueOf(request.getPriority()));
+        
         if (request.getStatus() != null) {
             Task.Status newStatus = Task.Status.valueOf(request.getStatus());
             task.setStatus(newStatus);
@@ -130,9 +135,10 @@ public class TaskService {
                 task.setCompletedAt(LocalDateTime.now());
             }
         }
-        if (request.getDeadline() != null) task.setDeadline(request.getDeadline());
-        if (request.getCategory() != null) task.setCategory(request.getCategory());
-        if (request.getEstimatedMinutes() != null) task.setEstimatedMinutes(request.getEstimatedMinutes());
+        
+        task.setDeadline(request.getDeadline());
+        task.setCategory(request.getCategory());
+        task.setEstimatedMinutes(request.getEstimatedMinutes());
 
         if (request.getAssigneeId() != null) {
             User assignee = userRepository.findById(request.getAssigneeId())
@@ -143,12 +149,16 @@ public class TaskService {
                         "You've been assigned task: " + task.getTitle(),
                         Notification.NotificationType.TASK_ASSIGNED, task, task.getProject());
             }
+        } else {
+            task.setAssignee(null);
         }
 
         if (request.getProjectId() != null) {
             Project project = projectRepository.findById(request.getProjectId())
                     .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
             task.setProject(project);
+        } else {
+            task.setProject(null);
         }
 
         if (request.getTagIds() != null) {
@@ -228,7 +238,7 @@ public class TaskService {
 
     public List<TaskDTO> getMyTasks() {
         User currentUser = userService.getCurrentUser();
-        return taskRepository.findByAssigneeId(currentUser.getId()).stream().map(this::mapToDTO).collect(Collectors.toList());
+        return taskRepository.findMyTasks(currentUser.getId()).stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     public List<TaskDTO> getKanbanTasks(Long projectId) {
@@ -243,7 +253,7 @@ public class TaskService {
 
     public List<TaskDTO> getMyTasksByDateRange(LocalDateTime start, LocalDateTime end) {
         User currentUser = userService.getCurrentUser();
-        return taskRepository.findUserTasksBetweenDates(currentUser.getId(), start, end)
+        return taskRepository.findMyCalendarTasks(currentUser.getId(), start, end)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
@@ -277,7 +287,13 @@ public class TaskService {
     public void deleteTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-        activityLogService.log("DELETE", "TASK", id, userService.getCurrentUser(), "Task deleted: " + task.getTitle());
+
+        // Clean up related records that have FK references to this task
+        notificationRepository.deleteByTaskId(id);
+        activityLogRepository.deleteByEntityTypeAndEntityId("TASK", id);
+        commentRepository.deleteByTaskId(id);
+
+        // Now safe to delete the task itself
         taskRepository.delete(task);
         messagingTemplate.convertAndSend("/topic/tasks", Map.of("type", "TASK_DELETED", "data", Map.of("id", id)));
     }

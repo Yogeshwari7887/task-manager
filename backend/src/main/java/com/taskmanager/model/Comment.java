@@ -1,5 +1,7 @@
 package com.taskmanager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -27,18 +29,22 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "task_id", nullable = false)
+    @JsonIgnoreProperties({"subtasks", "dependencies", "dependents", "tags", "comments", "timeLogs", "project", "assignee", "createdBy", "parentTask", "description", "attachments"})
     private Task task;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"password", "assignedTasks", "projectMemberships", "role", "bio", "phone", "createdAt", "updatedAt", "lastLogin", "active", "email"})
     private User user;
 
     // Reply thread support
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
+    @JsonIgnore
     private Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     @Builder.Default
     private List<Comment> replies = new ArrayList<>();
 

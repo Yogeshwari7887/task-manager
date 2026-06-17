@@ -50,6 +50,7 @@ C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskma
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\repository\CommentRepository.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\repository\HabitRepository.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\service\CommentService.java
+C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\dto\NotificationDTO.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\service\ProjectService.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\service\ActivityLogService.java
 C:\Users\91738\Desktop\My Projects\task manager\backend\src\main\java\com\taskmanager\repository\TaskDependencyRepository.java

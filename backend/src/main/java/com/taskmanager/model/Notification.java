@@ -27,16 +27,17 @@ public class Notification {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"password", "assignedTasks", "projectMemberships", "role", "bio", "phone", "createdAt", "updatedAt", "lastLogin", "active"})
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "task_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"subtasks", "dependencies", "dependents", "tags", "comments", "timeLogs", "project", "assignee", "createdBy", "parentTask", "description", "attachments"})
     private Task task;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"members", "tasks", "owner", "description"})
     private Project project;
 
     @Builder.Default

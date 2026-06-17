@@ -127,11 +127,17 @@ async function loadNotifications() {
                 <div class="notif-time">${timeAgo(n.createdAt)}</div>
             </div>
         `).join('');
-    } catch (e) { }
+    } catch (e) {
+        console.error('Failed to load notifications:', e);
+    }
 }
 
 async function markNotifRead(id) {
-    try { await api.put(`/notifications/${id}/read`); updateNotificationBadge(); } catch (e) { }
+    try {
+        await api.put(`/notifications/${id}/read`);
+        updateNotificationBadge();
+        loadNotifications();
+    } catch (e) { }
 }
 
 async function markAllNotificationsRead() {

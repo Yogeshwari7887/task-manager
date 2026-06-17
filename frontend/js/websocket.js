@@ -40,9 +40,9 @@ function disconnectWebSocket() {
 }
 
 function handleTaskUpdate(data) {
-    // Refresh current page if viewing tasks/kanban
+    // Refresh current page if viewing tasks-related pages
     const page = getCurrentPage();
-    if (['dashboard', 'tasks', 'kanban'].includes(page)) {
+    if (['dashboard', 'tasks', 'kanban', 'calendar', 'alerts'].includes(page)) {
         if (typeof pages[page]?.render === 'function') {
             pages[page].render();
         }

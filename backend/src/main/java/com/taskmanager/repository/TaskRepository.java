@@ -49,4 +49,26 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT t FROM Task t WHERE t.assignee.id = :userId AND t.status = 'IN_PROGRESS' ORDER BY COALESCE(t.computedPriority, 0) DESC")
     List<Task> findActiveTasksByUser(@Param("userId") Long userId);
+
+    // ===== NEW QUERIES for My Tasks (assigned to OR created by user) =====
+
+    @Query("SELECT DISTINCT t FROM Task t WHERE (t.assignee.id = :userId OR t.createdBy.id = :userId) AND t.parentTask IS NULL")
+    List<Task> findMyTasks(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT t FROM Task t WHERE (t.assignee.id = :userId OR t.createdBy.id = :userId) AND t.deadline BETWEEN :start AND :end")
+    List<Task> findMyCalendarTasks(@Param("userId") Long userId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    // ===== NEW QUERIES for Dashboard counts =====
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE (t.assignee.id = :userId OR t.createdBy.id = :userId) AND t.status = 'IN_PROGRESS'")
+    long countInProgressByUser(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE (t.assignee.id = :userId OR t.createdBy.id = :userId) AND t.deadline < :now AND t.status != 'COMPLETED' AND t.status != 'CANCELLED'")
+    long countOverdueByUser(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE (t.assignee.id = :userId OR t.createdBy.id = :userId) AND t.status = 'COMPLETED'")
+    long countCompletedByUserAll(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE (t.assignee.id = :userId OR t.createdBy.id = :userId) AND t.status != 'COMPLETED' AND t.status != 'CANCELLED'")
+    long countPendingByUserAll(@Param("userId") Long userId);
 }
